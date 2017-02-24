@@ -39,6 +39,17 @@ StellarTerm is a web based trading client for use on the Stellar network. This c
 
 ## Deployment
 The project is hosted on GitHub pages in the [stellarterm/stellarterm.github.io](https://github.com/stellarterm/stellarterm.github.io/) repository. The client is wrapped into a single html file and it's sha 256 sum is recorded on each git commit.
+to deploy from source:
+1). git clone https://github.com/sacarlson/stellarterm.git
+2). cd stellarterm
+3). gulp ; this will create a dist dir and run a server at port 3000 that can be used to pretest the app
+4). after satisfied with mods you made, you can copy paste the dist directory into your apache or other server to run from
+    it now contains everything needed from that point.
+
+preliminary install on ubuntu you will need npm, and gulp
+ install npm: sudo apt-get install nodejs
+ optional: sudo apt-get install build-essential  ; not sure this is needed here
+ npm install --global gulp-cli.
 
 ## License
 StellarTerm is open source software licensed under the Apache-2.0 license.
