@@ -202,12 +202,19 @@ export default class OfferMaker extends React.Component {
 
     let error;
     if (this.state.errorMessage) {
+      console.log("window.global_stuf.my_signer_link object in OfferMaker");
+      console.log(window.global_stuf.my_signer_link);
       error = <div className="s-alert s-alert--alert OfferMaker__message">Failed to create offer. Possible reasons why:
         <ul className="OfferMaker__errorList">
           <li>Not enough funds to complete order</li>
+          <li>Account requires more signers</li>
+          <li> <a href={window.global_stuf.my_signer_link}>send_tx_to_my_wallet_to_sign</a> </li>
+          <li> <a href={window.global_stuf.lab_signer_link}>send_tx_to_stellar_lab_to_sign</a> </li>
+          <li> <a href={window.global_stuf.lab_viewer_link}>view_tx_details_at_stellar_lab</a> </li>
         </ul>
       </div>;
     }
+ 
 
     let success;
     if (this.state.successMessage !== '') {

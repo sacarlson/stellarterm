@@ -9,6 +9,62 @@ import Stellarify from '../lib/Stellarify';
 import BigNumber from 'bignumber.js';
 BigNumber.config({ EXPONENTIAL_AT: 100 });
 
+  function gen_my_wallet_signer_link(b64_tx_env){
+      // example output to my_signer_link
+      //"https://wallet.funtracker.site/?json=%7B%22env_b64%22:%22AAAAAACiljUs+IgW9r0pX8M/tQAOZ0ZvSfYAvdaqe43XQcJ9AAAAZAAJZF4AAAAkAAAAAAAAAAAAAAABAAAAAAAAAAMAAAABVVNEAAAAAACJmyhA7VY2xW3cXxSyOXX3nxuiOI0mlOTFbs3dyWDl7wAAAAAAAAAAAJiWgAAAAgkAAAABAAAAAAAAAAAAAAAAAAAAAA==%22%7D"app.js:51788:3
+      //var signer_url = 'https://wallet.funtracker.site';
+      var signer_url = window.global_stuf.my_wallet_url
+      var pre_env = '/?json=%7B%22env_b64%22:%22';
+      var post_env = '%22%7D';
+      window.global_stuf.my_signer_link =  signer_url + pre_env + b64_tx_env + post_env;
+      console.log("my_signer_link");
+      console.log(window.global_stuf.my_signer_link);
+  }
+
+  function gen_lab_env_signer_link(b64_tx_env){
+    // example output to lab_viewer_link.  b64_tx_env is a base64 encoded string of tx envelope
+    //https://www.stellar.org/laboratory/#txsigner?xdr=AAAAAACiljUs%2BIgW9r0pX8M%2FtQAOZ0ZvSfYAvdaqe43XQcJ9AAAAZAAJZF4AAAAHAAAAAAAAAAAAAAABAAAAAAAAAAMAAAABVVNEAAAAAACJmyhA7VY2xW3cXxSyOXX3nxuiOI0mlOTFbs3dyWDl7wAAAAAAAAAAAJiWgAAAAgkAAAABAAAAAAAAAAAAAAAAAAAAAA%3D%3D&network=test
+    var signer_url = window.global_stuf.stellar_lab_url;
+    var pre_env = "/#txsigner?xdr=";
+    var post_env = "&network=" + window.global_stuf.network;
+    console.log("b64_tx_env_pre_encoded");
+    console.log(b64_tx_env);
+    console.log("post_encoded");
+    //var b64_post_encode = encodeURI(b64_tx_env);
+    var b64_post_encode = b64_tx_env.replace(/\=/g,"%3D");
+    b64_post_encode = b64_post_encode.replace(/\//g,"%2F");
+    b64_post_encode = b64_post_encode.replace(/\+/g,"%2B");    
+    //window.global_stuf.lab_signer_link = signer_url + pre_env + b64_tx_env + post_env;
+    window.global_stuf.lab_signer_link = signer_url + pre_env + b64_post_encode + post_env;
+    console.log("lab_env_signer_link");
+    console.log(window.global_stuf.lab_signer_link);
+  }
+
+  function gen_lab_env_viewer_link(b64_tx_env){
+    // "https://www.stellar.org/laboratory/#xdr-viewer?input=AAAAAACiljUs%2BIgW9r0pX8M%2FtQAOZ0ZvSfYAvdaqe43XQcJ9AAAAZAAJZF4AAAAkAAAAAAAAAAAAAAABAAAAAAAAAAMAAAABVVNEAAAAAACJmyhA7VY2xW3cXxSyOXX3nxuiOI0mlOTFbs3dyWDl7wAAAAAAAAAAAJiWgAAAAgkAAAABAAAAAAAAAAAAAAAAAAAAAA%3D%3D&type=TransactionEnvelope&network=test"
+    var viewer_url = window.global_stuf.stellar_lab_url;
+    var pre_env = "/#xdr-viewer?input=";
+    var post_env = "&type=TransactionEnvelope&network=" + window.global_stuf.network;
+    var b64_post_encode = b64_tx_env.replace(/\=/g,"%3D");
+    b64_post_encode = b64_post_encode.replace(/\//g,"%2F");
+    b64_post_encode = b64_post_encode.replace(/\+/g,"%2B");    
+    console.log("b64_tx_env_pre_encoded");
+    console.log(b64_tx_env);
+    console.log("post_encoded");
+    console.log(b64_post_encode);     
+    window.global_stuf.lab_viewer_link = viewer_url + pre_env + b64_post_encode + post_env;
+    console.log("lab_env_viewer_link");
+    console.log(window.global_stuf.lab_viewer_link);
+  }
+
+  function gen_links(b64_tx_env){
+    console.log("start gen_links");
+    gen_my_wallet_signer_link(b64_tx_env);
+    gen_lab_env_signer_link(b64_tx_env);
+    gen_lab_env_viewer_link(b64_tx_env);
+  }
+
+
 // Spoonfed Stellar-SDK: Super easy to use higher level Stellar-Sdk functions
 // Simplifies the objects to what is necessary. Listens to updates automagically.
 // It's in the same file as the driver because the driver is the only one that
@@ -17,7 +73,19 @@ const MagicSpoon = {
   async Account(Server, keypair, onUpdate) {
     let sdkAccount = await Server.loadAccount(keypair.accountId())
     sdkAccount.sign = transaction => {
+      var b64_tx_env = transaction.toEnvelope().toXDR().toString("base64");
+      gen_links(b64_tx_env);
+      try {
+         console.log(keypair.seed());
+      } catch (e) {
+         console.log("keypair has no seed");
+         console.log(e);
+         return
+      }
+      console.log("signing tx with keypair");
       transaction.sign(keypair);
+      b64_tx_env = transaction.toEnvelope().toXDR().toString("base64")
+      gen_links(b64_tx_env);
     };
 
     // Expects StellarSdk.Asset
@@ -165,6 +233,7 @@ const MagicSpoon = {
         spoonAccount.updateOffers(); // Just to be doubly sure
         return;
       })
+
   },
   changeTrust(Server, spoonAccount, opts) {
     let sdkLimit;
@@ -248,13 +317,32 @@ function Driver(opts) {
   };
 
   this.handlers = {
-    logIn: async (secretKey) => {
+    logIn: async (secretKey,publicKey) => {
       let keypair;
+      console.log("publicKey");
+      console.log(publicKey);
       try {
         keypair = StellarSdk.Keypair.fromSeed(secretKey);
+        //console.log(keypair.secret());
+        console.log(keypair.seed());
       } catch (e) {
         console.log('Invalid secret key');
-        return;
+        console.log(e);
+        try {
+          //keypair = StellarSdk.Keypair.fromPublicKey(publicKey);
+          keypair = StellarSdk.Keypair.fromAccountId(publicKey);
+          //console.log(keypair.secret());
+          try {
+            console.log(keypair.seed());
+          } catch (e) {
+            console.log("keypair has no seed");
+            console.log(e);
+          }
+        } catch (e) {
+          console.log('Invalid publickey key');
+          console.log(e);
+          return;
+        }        
       }
       this.session.setupError = false;
       this.session.state = 'loading';

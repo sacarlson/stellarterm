@@ -42,6 +42,8 @@ The project is hosted on GitHub pages in the [stellarterm/stellarterm.github.io]
 to deploy from source:
 1). git clone https://github.com/sacarlson/stellarterm.git
 2). cd stellarterm
+2.5). npm install
+2.6). bower install
 3). gulp ; this will create a dist dir and run a server at port 3000 that can be used to pretest the app
 4). after satisfied with mods you made, you can copy paste the dist directory into your apache or other server to run from
     it now contains everything needed from that point.

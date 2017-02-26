@@ -1,6 +1,14 @@
 const React = window.React = require('react');
 const ReactDOM = require('react-dom');
 const mountNode = document.getElementById('app');
+
+window.global_stuf = {};
+window.global_stuf.my_signer_link = "tbd";
+window.global_stuf.lab_signer_link = "tbd";
+window.global_stuf.lab_viewer_link = "tbd";
+window.global_stuf.my_wallet_url = "https://wallet.funtracker.site";
+window.global_stuf.stellar_lab_url = "https://www.stellar.org/laboratory"
+
 import NotFound from './components/NotFound.jsx';
 import Markets from './components/Markets.jsx';
 import Session from './components/Session.jsx';
@@ -13,16 +21,19 @@ import Driver from './lib/Driver';
 
 let network = {};
 
+
 let useLiveNetwork = () => {
   network.horizonUrl = 'https://horizon.stellar.org';
   StellarSdk.Network.usePublicNetwork();
+  window.global_stuf.network = "public";
 }
 let useTestNetwork = () => {
   network.horizonUrl = 'https://horizon-testnet.stellar.org';
   StellarSdk.Network.useTestNetwork();
+  window.global_stuf.network = "test";
 }
-useLiveNetwork();
-// useTestNetwork();
+//useLiveNetwork();
+useTestNetwork();
 
 let driver = new Driver({
   horizonUrl: network.horizonUrl,
